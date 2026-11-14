@@ -111,3 +111,29 @@ user32.DefWindowProcW.restype = c_longlong
 - 某些精简 Python 缺 Tcl/Tk 数据文件：`import tkinter` 能过，`Tk()` 报
   `Can't find a usable init.tcl` —— 这种解释器只能 `--no-panel`。
 - 本机 git 若配过失效的 `http.proxy`，推送会一直连不上，需要 `-c http.proxy= -c https.proxy=` 绕过。
+
+## 8. 打包与发版
+
+```powershell
+powershell -ExecutionPolicy Bypass -File tools\build_exe.ps1     # -> dist\PrivacyGuard.exe
+```
+
+PyInstaller 不能直接打 `-m privacyguard`，所以有 `launch.py` 这个薄入口（内容就是
+`from privacyguard.__main__ import main` 后 `raise SystemExit(main())`）。
+
+| 参数 | 为什么必须 |
+|---|---|
+| `--collect-data cv2` | 把 `cv2/data/*.xml` 一起带走；漏了 EXE 里 `cv2.data.haarcascades` 是空目录，检测器直接失效 |
+| `--hidden-import PIL.ImageTk` | 面板的摄像头预览走 ImageTk，静态分析看不到 |
+| `--onefile --windowed` | 单文件、双击不弹黑框；代价是每次启动解包到 `%TEMP%\_MEIxxxx` |
+| `--icon` / `--version-file` | 资源管理器里显示图标与 1.0.0 版本号 |
+| `--add-data "assets\icon.png;assets"` | 面板/关于处若要用 PNG 图标 |
+
+**frozen 状态的两个差异**：`sys.executable` 就是 `PrivacyGuard.exe` 本身，所以
+`set_autostart` 在 `getattr(sys, "frozen", False)` 时写入的是
+`"C:\...\PrivacyGuard.exe" --no-panel`，不再拼 `-m privacyguard`、也不再替换 `pythonw.exe`
+（源码运行时才需要这两步）。其余逻辑（注册表位置、HKCU Run）完全相同。
+
+产物 65 MB，首次启动约 2–4 秒（解包），第二次之后走系统文件缓存会快很多。
+发版资产通过 GitHub API 上传，本地 SHA-256 与下载回来的文件逐字节一致（已核对）。
+
