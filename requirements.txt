@@ -1,0 +1,4 @@
+# Haar cascade XMLs were removed from the OpenCV 5.x wheels, so 4.12 is required.
+opencv-python==4.12.0.88
+numpy>=1.24
+Pillow>=10.0
