@@ -14,6 +14,23 @@
 
 ---
 
+## Download (no Python needed)
+
+| File | What it is |
+|---|---|
+| [**PrivacyGuard.exe**](https://github.com/sg0928-new/-/releases/latest/download/PrivacyGuard.exe) | Single-file Windows 10/11 build, 65 MB — Python, Tk, OpenCV and the Haar cascades are all inside |
+| [All releases](https://github.com/sg0928-new/-/releases) | Version history and release notes |
+
+```powershell
+.\PrivacyGuard.exe                 # control panel + guarding
+.\PrivacyGuard.exe --no-panel      # headless (this is what autostart registers)
+.\PrivacyGuard.exe --test 8        # preview the effects
+```
+
+> The build is unsigned, so SmartScreen shows "unknown publisher" on first launch —
+> choose *More info → Run anyway*. To build it yourself:
+> `pip install pyinstaller` then `powershell -File tools\build_exe.ps1`.
+
 ## Why
 
 A laptop opened in a train, a library or a hot-desking office has one recurring

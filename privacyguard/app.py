@@ -358,10 +358,14 @@ def set_autostart(enable: bool, no_panel: bool = True) -> bool:
     try:
         if enable:
             exe = sys.executable
-            if no_panel:
-                exe = exe.replace("python.exe", "pythonw.exe")
-            args = f'-m privacyguard --no-panel' if no_panel else '-m privacyguard'
-            winreg.SetValueEx(key, RUN_VALUE, 0, winreg.REG_SZ, f'"{exe}" {args}')
+            if getattr(sys, "frozen", False):
+                # packaged: sys.executable *is* PrivacyGuard.exe, there is no `-m`
+                args = "--no-panel" if no_panel else ""
+            else:
+                if no_panel:
+                    exe = exe.replace("python.exe", "pythonw.exe")
+                args = "-m privacyguard --no-panel" if no_panel else "-m privacyguard"
+            winreg.SetValueEx(key, RUN_VALUE, 0, winreg.REG_SZ, f'"{exe}" {args}'.strip())
         else:
             try:
                 winreg.DeleteValue(key, RUN_VALUE)

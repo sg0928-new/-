@@ -12,6 +12,23 @@
 
 ---
 
+## 下载即用（无需 Python）
+
+| 文件 | 说明 |
+|---|---|
+| [**PrivacyGuard.exe**](https://github.com/sg0928-new/-/releases/latest/download/PrivacyGuard.exe) | Windows 10/11 单文件版，65 MB，双击即用（摄像头、Tk、OpenCV 全打包在内） |
+| [全部发布版本](https://github.com/sg0928-new/-/releases) | 历史版本与版本说明 |
+
+```powershell
+# 下载后直接运行
+.\PrivacyGuard.exe                 # 打开控制面板并开始守护
+.\PrivacyGuard.exe --no-panel      # 纯后台（无界面，适合开机自启）
+.\PrivacyGuard.exe --test 8        # 先看一遍特效
+```
+
+> 未做代码签名，首次运行 Windows SmartScreen 会提示"未知发布者"，点"更多信息 → 仍要运行"即可。
+> 想自己从源码构建：`pip install pyinstaller && python tools\build_exe.ps1`（见[开发](#开发)）。
+
 ## 为什么需要它
 
 笔记本在地铁、图书馆、共享工位上打开时，最怕的是背后有人凑上来看屏幕。
@@ -164,11 +181,15 @@ privacyguard/
   sound.py        程序合成音效（numpy → wav → winsound 内存播放）
   hotkeys.py      全局热键消息线程
   panel.py        tkinter 控制面板
+assets/           图标（icon.ico / icon.png）与 EXE 版本资源
+launch.py         PyInstaller 打包入口（等价于 python -m privacyguard）
 docs/
   architecture.md 线程模型与关键实现细节
   effects/        16 张特效预览 + 图集
   screens/        面板与合成效果截图
 tools/render_effects.py   重新生成特效预览
+tools/make_icon.py        生成图标
+tools/build_exe.ps1        一键打包 dist\PrivacyGuard.exe
 tests/                    单元测试 + 覆盖层/特效/面板验证脚本
 ```
 
@@ -180,7 +201,14 @@ python tools\render_effects.py --out docs\effects   # 重出特效图集
 python tests\bench_loop.py pulse_frame frost        # 实测帧率
 python tests\prove_effect.py pulse_frame frost      # 把真实特效铺到屏幕上并截图
 python tests\shot_panel.py               # 逐个截取面板四个页面
+
+# 打包 EXE（需要 pip install pyinstaller）
+powershell -ExecutionPolicy Bypass -File tools\build_exe.ps1
 ```
+
+打包注意事项：`--collect-data cv2` 必须带上 `cv2/data/*.xml`（否则 EXE 里没有人脸级联）；
+`--hidden-import PIL.ImageTk` 缺了面板预览会崩；frozen 状态下 `sys.executable` 就是 EXE 本身，
+开机自启已自动改用 `"PrivacyGuard.exe" --no-panel`。
 
 技术细节见 [docs/architecture.md](docs/architecture.md)。
 
